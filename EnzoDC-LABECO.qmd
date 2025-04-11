@@ -1,0 +1,131 @@
+---
+title: "ENZO DUARTE CROZETA"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(tidyverse)
+library(WDI)
+```
+
+```{r}
+#| label: load-data
+#| include: false
+
+# código de carregamento de dados
+
+# Carregar os dados do Banco Mundial (ou substitua com seus próprios dados)
+dadosaula6 <- WDI(country = "all", indicator = c("FP.CPI.TOTL.ZG", "NY.GDP.MKTP.KD.ZG"), start = 2020, end = 2020)
+
+# Verificar os dados
+head(dadosaula6)
+
+# Filtrar os 30 maiores países com base no Crescimento do PIB (NY.GDP.MKTP.KD.ZG)
+top_30_paises <- dadosaula6 %>%
+  arrange(desc(NY.GDP.MKTP.KD.ZG)) %>%
+  head(30)
+
+# Baixar dados de crescimento populacional (SP.POP.GROW) para os EUA de 2000 a 2020
+dados_populacao <- WDI(country = "USA", indicator = "SP.POP.GROW", start = 2000, end = 2020)
+
+# Visualizar os dados
+head(dados_populacao)
+```
+
+## Grafíco Corte Transversal
+
+### Explicação das Variáveis do Banco Mundial:
+
+**NY.GDP.MKTP.KD.ZG** — Nome completo: *GDP growth (annual %)*. Tradução: Crescimento do Produto Interno Bruto (% ao ano). Essa variável mede a variação percentual anual do PIB real de um país, ou seja, ajustado pela inflação, em relação ao ano anterior. É um dos principais indicadores de desempenho econômico.\
+**Fonte:** Banco Mundial - [World Development Indicators (WDI)](https://databank.worldbank.org/source/world-development-indicators)
+
+**FP.CPI.TOTL.ZG** — Nome completo: *Inflation, consumer prices (annual %)*. Tradução: Crescimento do Índice de Preços ao Consumidor (% ao ano). Essa variável representa a taxa de inflação anual medida pelo Índice de Preços ao Consumidor (IPC), que reflete a variação média dos preços de uma cesta de bens e serviços consumidos pelas famílias.\
+**Fonte:** Banco Mundial - [World Development Indicators (WDI)](https://databank.worldbank.org/source/world-development-indicators)
+
+**SP.POP.GROW** — Nome completo: *Population growth (annual %)*. Tradução: Crescimento Populacional (% ao ano). Representa a taxa de crescimento da população de um país, considerando nascimentos, mortes e saldo migratório. É útil para análises demográficas e projeções econômicas.\
+**Fonte:** Banco Mundial - [World Development Indicators (WDI)](https://databank.worldbank.org/source/world-development-indicators)
+
+**country** — Representa o nome do país. É uma variável categórica usada para fins de identificação e visualização nos gráficos.\
+**Fonte:** Atribuído automaticamente pela função `WDI()` do pacote `WDI` no R, que importa dados diretamente da base de dados do Banco Mundial.
+
+Este gráfico apresenta a relação entre o **Crescimento do PIB** e o **Crescimento do Índice de Preços ao Consumidor (IPC)** para os **principais países** em um determinado ano. Ele foi gerado a partir de um conjunto de dados que contém informações sobre o crescimento do PIB e o crescimento do IPC, com os países sendo destacados por suas respectivas cores.
+
+O **Eixo X (horizontal)** representa o **Crescimento do PIB (%)**, indicando a taxa de crescimento econômico de cada país ajustada pela inflação. Já o **Eixo Y (vertical)** representa o **Crescimento do IPC (%)**, que mostra a variação do Índice de Preços ao Consumidor, um indicador da inflação.
+
+Cada ponto no gráfico representa um país, e a cor de cada ponto está associada ao país específico, permitindo uma rápida identificação visual. Os nomes dos países estão posicionados próximos aos seus respectivos pontos, facilitando a identificação. A posição dos rótulos foi ajustada para evitar sobreposição e melhorar a legibilidade.
+
+![](images/clipboard-4016845503.png){fig-align="center" width="337"}
+
+O gráfico permite observar como o crescimento econômico de cada país se relaciona com a inflação em um ano específico. Ele revela se há padrões ou correlações entre essas duas variáveis. Por exemplo, países com **alto crescimento do PIB** podem estar associados a uma **baixa inflação**, ou o contrário, dependendo da dinâmica econômica global e das políticas de cada país. Países com **baixo crescimento do PIB** podem ter uma inflação mais **alta** ou mais **baixa**, dependendo de fatores como políticas monetárias e crises econômicas.
+
+Esse tipo de análise oferece uma visão clara sobre como os países lidaram com os desafios econômicos daquele ano, como a pandemia e suas repercussões globais.
+
+Este gráfico oferece uma visão visual da interação entre o crescimento econômico e a inflação para os principais países, permitindo comparações rápidas entre eles. Essa análise é útil para entender as relações entre variáveis econômicas em um período de grande volatilidade global.
+
+```{r}
+#| label: graf1
+#| warning: false
+#| echo: false
+
+ggplot(top_30_paises, aes(x = NY.GDP.MKTP.KD.ZG, y = FP.CPI.TOTL.ZG)) +
+  geom_jitter(aes(color = country), 
+              width = 1.5,    # Aumentando o deslocamento horizontal
+              height = 1.5,   # Aumentando o deslocamento vertical
+              size = 4) +     # Tamanho dos pontos
+  geom_text(aes(label = country), 
+            size = 3,        # Tamanho dos rótulos
+            vjust = -1,      # Posição dos rótulos acima dos pontos
+            check_overlap = TRUE) +  # Verificar sobreposição dos rótulos
+  labs(x = "Crescimento do PIB (%)", 
+       y = "Crescimento do Índice de Preços ao Consumidor (%)", 
+       title = "Corte Transversal: Crescimento do PIB vs Crescimento do IPC em 2020 (Top 30 países)") +
+  theme_minimal() + # Tema mais simples
+    theme(axis.text.x = element_text(angle = 90, hjust = 1))# Ajustar rótulos do eixox
+```
+
+## Gráfico Série Temporal
+
+### Explicação das Variáveis:
+
+**NY.GDP.MKTP.KD.ZG** — Nome completo: *GDP growth (annual %)*. Tradução: Crescimento do Produto Interno Bruto (% ao ano). Essa variável mede a variação percentual do PIB real de um país em relação ao ano anterior. Fonte: Banco Mundial - *World Development Indicators*.
+
+**FP.CPI.TOTL.ZG** — Nome completo: *Inflation, consumer prices (annual %)*. Tradução: Crescimento do Índice de Preços ao Consumidor (Inflação, % ao ano). Representa a variação percentual anual do Índice de Preços ao Consumidor (IPC), que mede a inflação percebida pelos consumidores. Fonte: Banco Mundial - *World Development Indicators*.
+
+**country** — Essa variável representa o nome do país. É uma variável categórica (texto) utilizada tanto para colorir os pontos do gráfico quanto para identificar os países com rótulos.
+
+Este gráfico mostra a **Taxa de Crescimento Populacional** nos **EUA** entre os anos de **2000 e 2020**. Ele foi gerado a partir de dados populacionais, com a **taxa de crescimento populacional** representada ao longo do tempo.
+
+O **Eixo X (horizontal)** representa o **ano**, enquanto o **Eixo Y (vertical)** mostra a **taxa de crescimento populacional (%)**, que indica a variação percentual da população em relação ao ano anterior.
+
+A linha azul no gráfico representa a **taxa de crescimento populacional** ao longo dos anos, mostrando as variações de ano para ano. Além disso, os pontos vermelhos são usados para destacar os valores da taxa de crescimento em cada ano, tornando os dados mais visíveis e permitindo identificar facilmente os anos com maior ou menor crescimento.
+
+![](images/clipboard-2539791085.png){fig-align="center" width="350"}
+
+Este gráfico permite observar como a taxa de crescimento populacional nos EUA mudou ao longo do tempo, refletindo as flutuações no crescimento da população durante o período de 2000 a 2020. Ele pode revelar, por exemplo, períodos de crescimento acelerado ou desacelerado, possivelmente associados a fatores econômicos, políticas públicas ou mudanças demográficas.
+
+Através desse gráfico, é possível entender as tendências demográficas e como a população dos EUA variou durante as duas primeiras décadas do século XXI, fornecendo insights valiosos para análises de políticas públicas, economia e planejamento social.\
+
+```{r}
+#| label: graf2
+#| warning: false
+#| echo: false
+
+ggplot(dados_populacao, aes(x = year, y = SP.POP.GROW)) +
+  geom_line(color = "blue", size = 1) +  # Linha representando a taxa de crescimento
+  geom_point(color = "red", size = 2) +  # Adicionando pontos para cada ano
+  labs(x = "Ano", 
+       y = "Taxa de Crescimento Populacional (%)", 
+       title = "Taxa de Crescimento Populacional nos EUA (2000-2020)") +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Ajuste dos rótulos do eixo X
+```
+
+```         
+```
+
+```         
+```
