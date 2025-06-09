@@ -1,0 +1,132 @@
+---
+title: "ÍNDICE DE PREÇOS AO CONSUMIDOR AMPLO"
+format: html
+editor: visual
+---
+
+```{r}
+#| label: load-packages
+#| include: false
+
+library(GetBCBData)
+library(tidyverse)
+library(gganimate)
+library(gifski)
+library(plotly)
+
+```
+
+```{r}
+#| label: load-data
+#| include: false
+
+# Definir o ID da série IPCA
+my.id <- c(ipca = 433)
+
+# Buscar os dados do IPCA de 01/01/2004 até 31/12/2024
+df.bcb <- gbcbd_get_series(id = my.id,
+                           first.date = '2004-01-01',
+                           last.date = '2024-12-31',
+                           format.data = 'long',
+                           use.memoise = TRUE,
+                           cache.path = tempdir(),
+                           do.parallel = FALSE)
+
+# Ver estrutura dos dados
+glimpse(df.bcb)
+
+# Visualizar os dados
+head(df.bcb)
+```
+
+## Gráfico IPCA
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+# Instale os pacotes se não tiver
+# install.packages(c("ggplot2", "gganimate", "dplyr", "lubridate", "transformr"))
+
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+library(lubridate)
+
+# Dados tratados
+df <- df.bcb %>%
+  rename(data = ref.date, ipca = value) %>%
+  filter(!is.na(data), !is.na(ipca)) %>%
+  arrange(data) %>%
+  mutate(data = as.Date(data))
+
+# Plot básico com gganimate
+p <- ggplot(df, aes(x = data, y = ipca)) +
+  geom_line(color = "steelblue", size = 1.2) +
+  geom_point(color = "red", size = 2) +
+  labs(title = "Evolução do IPCA", x = "Data", y = "IPCA (%)") +
+  theme_minimal(base_size = 14) +
+  transition_reveal(data)
+
+# Renderizar como HTML com autoplay
+animate(p, nframes = 150, fps = 20, renderer = gifski_renderer("ipca.gif"))
+```
+
+### \*\* Análise Econômica do IPCA (2004–2024)\*\*
+
+**Fonte:** Banco Central do Brasil — Séries Temporais via `GetBCBData`
+
+#### **Contextualização Geral**
+
+O gráfico evidencia a **evolução da inflação mensal medida pelo IPCA**, principal índice de preços utilizado pelo Banco Central para fins de política monetária. Observa-se **alta volatilidade ao longo das duas décadas**, com episódios pontuais de pressão inflacionária e deflação, geralmente correlacionados a **choques de oferta, câmbio, política fiscal e eventos externos**.
+
+#### **Destaques Cronológicos e Causas Prováveis**
+
+##### **2008–2009: Crise Financeira Global**
+
+-   **Impacto:** Queda abrupta na inflação mensal entre fim de 2008 e meados de 2009.
+
+-   **Causa:** Recessão global e queda nos preços das commodities. Dólar se valorizou fortemente.
+
+-   **Política econômica:** Expansão monetária para conter desaceleração.
+
+##### **2015–2016: Recessão e Crise Fiscal**
+
+-   **Impacto:** Picos de inflação mensal, superando 1% ao mês em certos períodos.
+
+-   **Causa:** Aumento de tarifas públicas (energia, combustíveis), desvalorização cambial acentuada e perda de confiança no arcabouço fiscal.
+
+-   **Resultado:** IPCA ultrapassa teto da meta do BC, exigindo postura mais "hawkish" (aumento da taxa de juros) por parte do COPOM em seguida.
+
+##### **2020: Pandemia da COVID-19**
+
+-   **Impacto:** Forte **queda na inflação** em meados de 2020, com episódios de **deflação**, seguida de **alta acelerada**.
+
+-   **Causa:** Queda na demanda (lockdowns), depois choque de oferta e alta de commodities com reabertura econômica.
+
+-   **Política:** Juros em mínimas históricas (Selic a 2%) aceleraram a inflação no segundo semestre.
+
+##### **2021–2022: Choque Inflacionário Global**
+
+-   **Impacto:** Fortes altas mensais, chegando a **recordes da série** (\~1.6%).
+
+-   **Causa:** Crise energética, gargalos logísticos, guerra na Ucrânia e valorização do dólar.
+
+-   **Resposta:** Aumento expressivo da Selic (de 2% para 13.75%).
+
+##### **2023–2024: Arrefecimento Gradual**
+
+-   **Impacto:** Nível de inflação mais estável e moderado.
+
+-   **Causa:** Política monetária restritiva surtiu efeito, somado à melhora nos estoques globais e recuo das commodities.
+
+-   **Cenário:** Inflação se aproximando do centro da meta, com expectativa de corte gradual da Selic.
+
+### **Considerações Estratégicas**
+
+-   O gráfico mostra que **política monetária e choques externos são os principais vetores de pressão sobre o IPCA**.
+
+-   **Inflação brasileira é sensível ao câmbio**, aos preços administrados e às commodities (em especial alimentos e energia).
+
+-   **Ciclos econômicos, crises externas e eventos imprevisíveis** (como pandemia e guerra) impactam fortemente a volatilidade inflacionária.
